@@ -14,7 +14,7 @@ class FrameOfReferenceCompressor:
         if not data:
             return None, []
 
-        # Use the minimum value as the reference
+        # Use the minimum value as the reference (frame of reference)
         reference_value = min(data)
         adjusted_values = [value - reference_value for value in data]
 

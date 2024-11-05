@@ -12,7 +12,7 @@ class DifferentialCompressor:
         if not data:
             return []
 
-        # First element remains as it is; subsequent elements are stored as differences
+        # The first value remains as is, subsequent values are stored as differences
         compressed_data = [data[0]]
         for i in range(1, len(data)):
             compressed_data.append(data[i] - data[i - 1])
@@ -32,7 +32,7 @@ class DifferentialCompressor:
         if not compressed_data:
             return []
 
-        # Reconstruct the data by summing up the differences
+        # The first value remains as is, subsequent values are added to reconstruct the data
         decompressed_data = [compressed_data[0]]
         for i in range(1, len(compressed_data)):
             decompressed_data.append(decompressed_data[-1] + compressed_data[i])

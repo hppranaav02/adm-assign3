@@ -1,14 +1,14 @@
 class DictionaryCompressor:
     def compress(self, data):
         """
-        Compresses the data using dictionary encoding.
+        Compresses the input data using dictionary encoding.
         
         Parameters:
         - data: List of values to compress.
         
         Returns:
-        - Tuple of (dictionary, encoded_data), where:
-            - dictionary: A mapping of unique values to indices.
+        - Tuple (dictionary, encoded_data):
+            - dictionary: Mapping of unique values to indices.
             - encoded_data: List of indices representing the data.
         """
         # Create a dictionary of unique values with indices
@@ -22,7 +22,7 @@ class DictionaryCompressor:
         Decompresses the data using dictionary decoding.
         
         Parameters:
-        - dictionary: A mapping of indices to unique values.
+        - dictionary: Mapping of indices to unique values.
         - encoded_data: List of indices representing the data.
         
         Returns:
