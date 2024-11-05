@@ -1,40 +1,22 @@
-class DifferentialCompressor:
-    def compress(self, data):
-        """
-        Compresses the data using differential encoding.
+class DifferentialEncoder:
+    def encode(self, data, dtype):
+        data = [int(d) for d in data]
+        reference = data[0]
+        adjusted_values = [d - reference for d in data]
         
-        Parameters:
-        - data: List of integer values to compress.
+        encoded_data = bytearray()
+        encoded_data.extend(reference.to_bytes(4, byteorder='big', signed=True))
+        for val in adjusted_values:
+            encoded_data.extend(val.to_bytes(4, byteorder='big', signed=True))
         
-        Returns:
-        - List of integers where each element is the difference from the previous element.
-        """
-        if not data:
-            return []
+        return encoded_data
 
-        # The first value remains as is, subsequent values are stored as differences
-        compressed_data = [data[0]]
-        for i in range(1, len(data)):
-            compressed_data.append(data[i] - data[i - 1])
-
-        return compressed_data
-
-    def decompress(self, compressed_data):
-        """
-        Decompresses the data using differential decoding.
+    def decode(self, data, dtype):
+        reference = int.from_bytes(data[0:4], byteorder='big', signed=True)
+        decoded_data = [reference]
         
-        Parameters:
-        - compressed_data: List of integers where each element is the difference from the previous element.
+        for i in range(4, len(data), 4):
+            delta = int.from_bytes(data[i:i+4], byteorder='big', signed=True)
+            decoded_data.append(reference + delta)
         
-        Returns:
-        - List of original integer values reconstructed from the differential data.
-        """
-        if not compressed_data:
-            return []
-
-        # The first value remains as is, subsequent values are added to reconstruct the data
-        decompressed_data = [compressed_data[0]]
-        for i in range(1, len(compressed_data)):
-            decompressed_data.append(decompressed_data[-1] + compressed_data[i])
-
-        return decompressed_data
+        return decoded_data

@@ -1,132 +1,85 @@
-import sys
-import csv
 import os
+import sys
 import time
-from Binary import BinaryDataCompressor
-from Dictionary import DictionaryCompressor
-from Differential import DifferentialCompressor
-from FrameofReference import FrameOfReferenceCompressor
-from RunLength import RunLengthCompressor
-import pickle
+import csv
 
-def print_usage():
-    print("Usage: program.py <en|de> <bin|rle|dic|for|dif> <int8|int16|int32|int64|string> <file_path>")
-    sys.exit(1)
+from binary import BinaryEncoder
+from dictionary import DictionaryEncoder
+from differential import DifferentialEncoder
+from frameofreference import FrameOfReferenceEncoder
+from runlength import RunLengthEncoder
 
-def read_csv_data(file_path):
-    """Reads a single-column CSV file and returns a list of values."""
+output_directory = "output_files"
+os.makedirs(output_directory, exist_ok=True)
+
+def read_input_data(file_path):
     with open(file_path, 'r') as file:
-        reader = csv.reader(file)
-        data = [row[0] for row in reader]
-    return data
-
-def write_encoded_data(file_path, data):
-    """Writes binary encoded data to a file."""
-    with open(file_path, 'wb') as file:
-        file.write(data)
+        return [line.strip() for line in file]
 
 def read_encoded_data(file_path):
-    """Reads binary encoded data from a file."""
     with open(file_path, 'rb') as file:
         return file.read()
 
-def print_decoded_data(data):
-    """Outputs decoded data to the console (stdout) in plain text."""
-    for item in data:
+def write_encoded_data(file_path, encoded_data):
+    with open(file_path, 'wb') as file:
+        file.write(encoded_data)
+
+def print_decoded_data(decoded_data):
+    for item in decoded_data:
         print(item)
 
 def main():
     if len(sys.argv) != 5:
         print("Error: Incorrect number of arguments.")
-        print_usage()
+        print("Usage: program.py <en|de> <bin|rle|dic|for|dif> <int8|int16|int32|int64|string> <file_path>")
+        sys.exit(1)
 
-    operation, method, data_type, file_path = sys.argv[1:]
+    mode, method, data_type, file_path = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4]
 
-    # Verify arguments
-    if operation not in ["en", "de"]:
-        print("Error: Operation must be 'en' or 'de'.")
-        print_usage()
-    if method not in ["bin", "rle", "dic", "for", "dif"]:
-        print("Error: Compression method must be one of 'bin', 'rle', 'dic', 'for', or 'dif'.")
-        print_usage()
-    if data_type not in ["int8", "int16", "int32", "int64", "string"]:
-        print("Error: Data type must be one of 'int8', 'int16', 'int32', 'int64', or 'string'.")
-        print_usage()
+    # Map of encoders based on method
+    encoders = {
+        'bin': BinaryEncoder(),
+        'rle': RunLengthEncoder(),
+        'dic': DictionaryEncoder(),
+        'for': FrameOfReferenceEncoder(),
+        'dif': DifferentialEncoder()
+    }
 
-    # Select the appropriate compressor based on the method
-    if method == "bin":
-        compressor = BinaryDataCompressor()
-    elif method == "rle":
-        compressor = RunLengthCompressor()
-    elif method == "dic":
-        compressor = DictionaryCompressor()
-    elif method == "for":
-        compressor = FrameOfReferenceCompressor()
-    elif method == "dif":
-        compressor = DifferentialCompressor()
-    else:
-        raise ValueError("Unsupported compression method.")
+    if method not in encoders:
+        print("Error: Unsupported encoding method.")
+        sys.exit(1)
 
-    # Perform encoding or decoding
-    if operation == "en":
-        # Read data and encode
-        data = read_csv_data(file_path)
-        
-        # Convert data to appropriate type if integer
-        if data_type != "string":
-            data = list(map(int, data))
+    encoder = encoders[method]
+    input_filename = os.path.basename(file_path)
+    output_path = os.path.join(output_directory, f"{input_filename}.{method}")
 
+    if mode == "en":
+        # Encoding
+        data = read_input_data(file_path)
         start_time = time.time()
-        
-        # Compress based on selected method
-        if method == "dic":
-            dictionary, encoded_data = compressor.compress(data)
-            output_data = (dictionary, encoded_data)
-        elif method in ["for", "dif"]:
-            reference, adjusted_values = compressor.compress(data)
-            output_data = (reference, adjusted_values)
-        else:
-            output_data = compressor.compress(data, data_type)
-
-        elapsed_time = time.time() - start_time
-        print(f"Encoding completed in {elapsed_time:.4f} seconds")
-
-        # Write encoded data to file with appropriate suffix
-        encoded_file_path = f"{file_path}.{method}"
-        if method in ["dic", "for", "dif"]:
-            with open(encoded_file_path, 'wb') as f:
-                pickle.dump(output_data, f)
-        else:
-            write_encoded_data(encoded_file_path, output_data)
-
-        print(f"Encoded data written to {encoded_file_path}")
+        encoded_data = encoder.encode(data, data_type)
+        encoding_time = time.time() - start_time
+        write_encoded_data(output_path, encoded_data)
+        print(f"Encoding completed in {encoding_time:.4f} seconds")
+        print(f"Encoded data written to {output_path}")
         print(f"Original file size: {os.path.getsize(file_path)} bytes")
-        print(f"Encoded file size: {os.path.getsize(encoded_file_path)} bytes")
+        print(f"Encoded file size: {os.path.getsize(output_path)} bytes")
 
-    elif operation == "de":
-        # Read encoded data and decode
+    elif mode == "de":
+        # Decoding
+        if not os.path.exists(output_path):
+            print(f"Error: Encoded file {output_path} does not exist.")
+            sys.exit(1)
+        
+        encoded_data = read_encoded_data(output_path)
         start_time = time.time()
-
-        if method in ["dic", "for", "dif"]:
-            with open(file_path, 'rb') as f:
-                encoded_data = pickle.load(f)
-            if method == "dic":
-                decoded_data = compressor.decompress(*encoded_data)
-            else:
-                decoded_data = compressor.decompress(encoded_data[0], encoded_data[1])
-        else:
-            encoded_data = read_encoded_data(file_path)
-            decoded_data = compressor.decompress(encoded_data, data_type)
-
-        elapsed_time = time.time() - start_time
-        print(f"Decoding completed in {elapsed_time:.4f} seconds")
-
-        # Output decoded data to stdout in plain text format
+        decoded_data = encoder.decode(encoded_data, data_type)
+        decoding_time = time.time() - start_time
+        print(f"Decoding completed in {decoding_time:.4f} seconds")
         print_decoded_data(decoded_data)
-
-        # Report sizes
-        print(f"Encoded file size: {os.path.getsize(file_path)} bytes")
-        print(f"Decoded output (original format): displayed on stdout")
+    else:
+        print("Error: Mode must be 'en' for encode or 'de' for decode.")
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
