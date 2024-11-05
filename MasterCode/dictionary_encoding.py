@@ -1,96 +1,75 @@
+from utils import is_integer_dtype, is_string_dtype, validate_data_for_encoding, check_value_within_dtype_range
 import sys
+
 
 class DictionaryEncoder:
     def encode(self, data, dtype):
-        """Encode data using Dictionary Encoding.
-        
-        Parameters:
-            data (list): List of values to encode (integers or strings).
-            dtype (str): Data type ('int8', 'int16', 'int32', 'int64', or 'string').
+        """Encode data using Dictionary Encoding."""
+        if not (is_integer_dtype(dtype) or is_string_dtype(dtype)):
+            raise TypeError(
+                f"Dictionary encoding supports only integer types and strings. Unsupported dtype '{dtype}'.")
 
-        Returns:
-            bytearray: Encoded binary data.
-        """
-        if dtype not in ["int8", "int16", "int32", "int64", "string"]:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types and strings are supported for dictionary encoding.")
+        if not validate_data_for_encoding(data, dtype):
+            return bytearray()  # Skip encoding if data is incompatible
 
         dictionary = {}
         encoded_data = bytearray()
         next_code = 0
+        size = int(dtype[3:]) // 8 if is_integer_dtype(dtype) else None
 
-        # Build dictionary and encode data
         for item in data:
             if item not in dictionary:
                 dictionary[item] = next_code
                 next_code += 1
-            try:
-                # Ensure we only encode strings
-                if isinstance(item, str):
-                    encoded_data.extend(dictionary[item].to_bytes(2, byteorder='big'))
-                else:
-                    # Convert integers to byte representation based on dtype size
-                    size = int(dtype[3:]) // 8  # Calculate byte size from dtype (e.g., 8, 16, 32, 64)
-                    encoded_data.extend(int(item).to_bytes(size, byteorder='big', signed=True))
-            except (OverflowError, ValueError) as e:
-                print(f"Warning: Item '{item}' exceeds byte limit or cannot be encoded as '{dtype}'. Error: {e}", file=sys.stderr)
-                continue
 
-        # Serialize the dictionary at the beginning of the encoded data
+            if is_string_dtype(dtype) and isinstance(item, str):
+                encoded_data.extend(dictionary[item].to_bytes(2, byteorder='big'))
+            elif is_integer_dtype(dtype) and check_value_within_dtype_range(item, dtype):
+                encoded_data.extend(dictionary[item].to_bytes(2, byteorder='big'))
+
         dictionary_bytes = bytearray()
         for key, value in dictionary.items():
             try:
-                if dtype == "string" and isinstance(key, str):
-                    encoded_key = key.encode() + b'\x00'  # Null-terminated strings
-                else:
-                    # Handle large integer keys properly
-                    encoded_key = int(key).to_bytes(int(dtype[3:]) // 8, byteorder='big', signed=True)
+                if is_string_dtype(dtype) and isinstance(key, str):
+                    encoded_key = key.encode() + b'\x00'
+                elif is_integer_dtype(dtype):
+                    encoded_key = int(key).to_bytes(size, byteorder='big', signed=True)
                 dictionary_bytes.extend(encoded_key)
                 dictionary_bytes.extend(value.to_bytes(2, byteorder='big'))
-            except (OverflowError, ValueError) as e:
-                print(f"Warning: Key '{key}' exceeds byte limit or cannot be represented as '{dtype}'. Error: {e}", file=sys.stderr)
-                continue
+            except (OverflowError, ValueError):
+                print(f"Warning: Skipping dictionary entry '{key}' for dtype '{dtype}' due to byte limit.",
+                      file=sys.stderr)
 
-        # Combine dictionary and encoded data
         final_encoded_data = len(dictionary_bytes).to_bytes(4, byteorder='big') + dictionary_bytes + encoded_data
         return final_encoded_data
 
     def decode(self, encoded_data, dtype):
-        """Decode Dictionary Encoded data back to a list of original values.
-        
-        Parameters:
-            encoded_data (bytearray): Encoded binary data.
-            dtype (str): Data type used in encoding ('int8', 'int16', 'int32', or 'int64', or 'string').
+        """Decode Dictionary Encoded data."""
+        if not (is_integer_dtype(dtype) or is_string_dtype(dtype)):
+            raise TypeError(
+                f"Dictionary decoding supports only integer types and strings. Unsupported dtype '{dtype}'.")
 
-        Returns:
-            list: Decoded list of original values.
-        """
-        if dtype not in ["int8", "int16", "int32", "int64", "string"]:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types and strings are supported for dictionary decoding.")
-
-        # Read dictionary size
         dict_size = int.from_bytes(encoded_data[:4], byteorder='big')
         dictionary = {}
         index = 4
+        size = int(dtype[3:]) // 8 if is_integer_dtype(dtype) else None
 
-        # Deserialize dictionary
         while index < 4 + dict_size:
-            if dtype == "string":
+            if is_string_dtype(dtype):
                 end = encoded_data.index(b'\x00', index)
                 key = encoded_data[index:end].decode()
                 index = end + 1
             else:
-                size = int(dtype[3:]) // 8
-                key = int.from_bytes(encoded_data[index:index+size], byteorder='big', signed=True)
+                key = int.from_bytes(encoded_data[index:index + size], byteorder='big', signed=True)
                 index += size
 
-            value = int.from_bytes(encoded_data[index:index+2], byteorder='big')
+            value = int.from_bytes(encoded_data[index:index + 2], byteorder='big')
             dictionary[value] = key
             index += 2
 
-        # Decode data using dictionary
         decoded_data = []
         for i in range(4 + dict_size, len(encoded_data), 2):
-            code = int.from_bytes(encoded_data[i:i+2], byteorder='big')
-            decoded_data.append(dictionary.get(code, None))  # Use `get` to avoid key errors in case of issues
+            code = int.from_bytes(encoded_data[i:i + 2], byteorder='big')
+            decoded_data.append(dictionary.get(code, None))
 
         return decoded_data

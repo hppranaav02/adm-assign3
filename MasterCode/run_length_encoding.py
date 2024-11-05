@@ -1,85 +1,51 @@
+from utils import is_integer_dtype, is_string_dtype, validate_data_for_encoding, check_value_within_dtype_range
+import sys
+
 class RunLengthEncoder:
     def encode(self, data, dtype):
-        """Encode data using Run-Length Encoding.
-        
-        Parameters:
-            data (list): List of integer values to encode.
-            dtype (str): Data type ('int8', 'int16', 'int32', or 'int64').
+        """Encodes data using Run-Length Encoding."""
+        if not (is_integer_dtype(dtype) or is_string_dtype(dtype)):
+            raise TypeError(f"RLE supports only integer types and strings. Unsupported dtype '{dtype}'.")
 
-        Returns:
-            bytearray: Encoded binary data.
-        """
-        # Define byte size for each integer type
-        type_size = {
-            'int8': 1,
-            'int16': 2,
-            'int32': 4,
-            'int64': 8
-        }
-        
-        # Ensure dtype is an integer type
-        if dtype not in type_size:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types are supported for RLE encoding.")
+        if not validate_data_for_encoding(data, dtype):
+            return bytearray()
 
-        size = type_size[dtype]
-        encoded_data = bytearray(size.to_bytes(1, byteorder='big'))  # First byte indicates size of integers
-        
-        # Run-Length Encoding: Count consecutive values
+        size = int(dtype[3:]) // 8 if is_integer_dtype(dtype) else None
+        encoded_data = bytearray(size.to_bytes(1, byteorder='big') if size else b'\x00')  # First byte for integer size
+
         count = 1
-        prev_value = int(data[0])
+        prev_value = data[0]
 
         for value in data[1:]:
-            value = int(value)
             if value == prev_value:
                 count += 1
             else:
-                # Append the previous value and its count
-                encoded_data.extend(prev_value.to_bytes(size, byteorder='big', signed=True))
-                encoded_data.extend(count.to_bytes(2, byteorder='big'))  # Use 2 bytes for count to handle large runs
-                # Reset count and update previous value
+                if is_string_dtype(dtype):
+                    encoded_data.extend(prev_value.encode() + b'\x00')
+                elif is_integer_dtype(dtype) and check_value_within_dtype_range(prev_value, dtype):
+                    encoded_data.extend(int(prev_value).to_bytes(size, byteorder='big', signed=True))
+                encoded_data.extend(count.to_bytes(2, byteorder='big'))
                 prev_value = value
                 count = 1
-        
-        # Append the final value and its count
-        encoded_data.extend(prev_value.to_bytes(size, byteorder='big', signed=True))
-        encoded_data.extend(count.to_bytes(2, byteorder='big'))
-        
+
         return encoded_data
 
     def decode(self, encoded_data, dtype):
-        """Decode Run-Length Encoded data back to a list of integers.
-        
-        Parameters:
-            encoded_data (bytearray): Encoded binary data.
-            dtype (str): Data type used in encoding ('int8', 'int16', 'int32', or 'int64').
-
-        Returns:
-            list: Decoded list of integers.
-        """
-        # Define byte size for each integer type
-        type_size = {
-            'int8': 1,
-            'int16': 2,
-            'int32': 4,
-            'int64': 8
-        }
-        
-        # Ensure dtype is an integer type
-        if dtype not in type_size:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types are supported for RLE decoding.")
-
-        size = encoded_data[0]  # First byte contains the size of each integer
-        if size != type_size[dtype]:
-            raise ValueError(f"Data size mismatch. Expected size {type_size[dtype]} but got {size}.")
-
+        """Decodes Run-Length Encoded data."""
+        size = int.from_bytes(encoded_data[0:1], byteorder='big') if is_integer_dtype(dtype) else None
         decoded_data = []
-        i = 1  # Start reading after the size byte
-        
-        # Decode each value and its count
+
+        i = 1
         while i < len(encoded_data):
-            value = int.from_bytes(encoded_data[i:i+size], byteorder='big', signed=True)
-            count = int.from_bytes(encoded_data[i+size:i+size+2], byteorder='big')  # 2 bytes for count
+            if is_string_dtype(dtype):
+                end = encoded_data.index(b'\x00', i)
+                value = encoded_data[i:end].decode()
+                i = end + 1
+            else:
+                value = int.from_bytes(encoded_data[i:i+size], byteorder='big', signed=True)
+                i += size
+            count = int.from_bytes(encoded_data[i:i+2], byteorder='big')
             decoded_data.extend([value] * count)
-            i += size + 2  # Move to the next encoded pair (value + count)
-        
+            i += 2
+
         return decoded_data

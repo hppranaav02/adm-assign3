@@ -1,3 +1,6 @@
+from utils import is_integer_dtype, is_string_dtype, validate_data_for_encoding, check_value_within_dtype_range
+import sys
+
 class BinaryEncoder:
     def encode(self, data, dtype):
         """Encode data as a bytearray in uncompressed binary format.
@@ -18,17 +21,22 @@ class BinaryEncoder:
         }
         
         # Ensure dtype is an integer type
-        if dtype not in type_size:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types are supported for binary encoding.")
+        if not is_integer_dtype(dtype):
+            raise TypeError(f"Binary encoding supports only integer types. Unsupported dtype '{dtype}'.")
 
-        # Convert data to integers and determine encoding size
-        size = type_size[dtype]
-        encoded_data = bytearray(size.to_bytes(1, byteorder='big'))  # First byte indicates the size of each integer
-        
-        # Encode each integer in the specified byte size
+        if not validate_data_for_encoding(data, dtype):
+            return bytearray()  # Skip encoding if data is incompatible
+
+        size = int(int(dtype[3:]) / 8)
+        encoded_data = bytearray(size.to_bytes(1, byteorder='big'))  # First byte: size of each integer
+
         for value in data:
-            encoded_data.extend(int(value).to_bytes(size, byteorder='big', signed=True))
-        
+            value = int(value)
+            if check_value_within_dtype_range(value, dtype):
+                encoded_data.extend(value.to_bytes(size, byteorder='big', signed=True))
+            else:
+                print(f"Warning: Value '{value}' exceeds byte limit for dtype '{dtype}'. Skipping.", file=sys.stderr)
+
         return encoded_data
 
     def decode(self, encoded_data, dtype):
@@ -50,17 +58,13 @@ class BinaryEncoder:
         }
         
         # Ensure dtype is an integer type
-        if dtype not in type_size:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types are supported for binary decoding.")
+        if not is_integer_dtype(dtype):
+            raise TypeError(f"Binary decoding supports only integer types. Unsupported dtype '{dtype}'.")
 
-        # Extract size from the first byte
-        size = encoded_data[0]
-        if size != type_size[dtype]:
-            raise ValueError(f"Data size mismatch. Expected size {type_size[dtype]} but got {size}.")
-
-        # Decode each value
+        size = int.from_bytes(data[0:1], byteorder='big')
         decoded_data = []
-        for i in range(1, len(encoded_data), size):
-            decoded_data.append(int.from_bytes(encoded_data[i:i+size], byteorder='big', signed=True))
-        
+
+        for i in range(1, len(data), size):
+            decoded_data.append(int.from_bytes(data[i:i + size], byteorder='big', signed=True))
+
         return decoded_data

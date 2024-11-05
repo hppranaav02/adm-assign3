@@ -1,72 +1,38 @@
+from utils import is_integer_dtype, validate_data_for_encoding, check_value_within_dtype_range
+import sys
+
 class DifferentialEncoder:
     def encode(self, data, dtype):
-        """Encode data using Differential Encoding.
-        
-        Parameters:
-            data (list): List of integer values to encode.
-            dtype (str): Data type ('int8', 'int16', 'int32', or 'int64').
+        """Encodes data using Differential Encoding."""
+        if not is_integer_dtype(dtype):
+            raise TypeError(f"Differential Encoding supports only integer types. Unsupported dtype '{dtype}'.")
 
-        Returns:
-            bytearray: Encoded binary data.
-        """
-        # Define byte size for each integer type
-        type_size = {
-            'int8': 1,
-            'int16': 2,
-            'int32': 4,
-            'int64': 8
-        }
+        if not validate_data_for_encoding(data, dtype):
+            return bytearray()
 
-        # Ensure dtype is an integer type
-        if dtype not in type_size:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types are supported for differential encoding.")
-
-        size = type_size[dtype]
+        size = int(dtype[3:]) // 8
         encoded_data = bytearray()
+        prev_value = int(data[0])
+        encoded_data.extend(prev_value.to_bytes(size, byteorder='big', signed=True))
 
-        # Store the first value as is
-        previous_value = int(data[0])
-        encoded_data.extend(previous_value.to_bytes(size, byteorder='big', signed=True))
-
-        # Encode subsequent values as differences from the previous value
         for value in data[1:]:
-            delta = value - previous_value
-            encoded_data.extend(delta.to_bytes(size, byteorder='big', signed=True))
-            previous_value = value  # Update previous value
-        
+            delta = value - prev_value
+            if check_value_within_dtype_range(delta, dtype):
+                encoded_data.extend(delta.to_bytes(size, byteorder='big', signed=True))
+                prev_value = value
+            else:
+                print(f"Warning: Delta '{delta}' exceeds byte limit for dtype '{dtype}'. Skipping.", file=sys.stderr)
+
         return encoded_data
 
     def decode(self, encoded_data, dtype):
-        """Decode Differential Encoded data back to a list of original values.
-        
-        Parameters:
-            encoded_data (bytearray): Encoded binary data.
-            dtype (str): Data type used in encoding ('int8', 'int16', 'int32', or 'int64').
-
-        Returns:
-            list: Decoded list of integers.
-        """
-        # Define byte size for each integer type
-        type_size = {
-            'int8': 1,
-            'int16': 2,
-            'int32': 4,
-            'int64': 8
-        }
-
-        # Ensure dtype is an integer type
-        if dtype not in type_size:
-            raise TypeError(f"Unsupported dtype {dtype}. Only integer types are supported for differential decoding.")
-
-        size = type_size[dtype]
-
-        # Read the first value as it is
+        """Decodes Differential Encoded data."""
+        size = int(dtype[3:]) // 8
         first_value = int.from_bytes(encoded_data[:size], byteorder='big', signed=True)
         decoded_data = [first_value]
 
-        # Decode each delta and reconstruct the original values
         for i in range(size, len(encoded_data), size):
             delta = int.from_bytes(encoded_data[i:i+size], byteorder='big', signed=True)
-            decoded_data.append(decoded_data[-1] + delta)  # Add delta to the last decoded value
-        
+            decoded_data.append(decoded_data[-1] + delta)
+
         return decoded_data
