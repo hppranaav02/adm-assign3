@@ -1,19 +1,21 @@
 import sys
+import struct
 
-def encode_bin_int64(input_file):
-    output_file = f"{input_file}.bin"
-    
+def encode_bin_int64(input_file, output_file):
     with open(input_file, 'r') as infile, open(output_file, 'wb') as outfile:
         for line in infile:
-            value = int(line.strip())  # Convert line to integer
-            outfile.write(value.to_bytes(8, byteorder='big', signed=True))
+            value = int(line.strip())
+            outfile.write(struct.pack('<q', value))  # '<q' for little-endian int64
 
-    print(f"Encoding completed for int64. Output saved to {output_file}")
-
-if __name__ == "__main__":
+def main():
     if len(sys.argv) != 2:
-        print("Usage: program-en-bin-int64.py <input_file>")
-        sys.exit(1)
+        print("Usage: python program-en-bin-int64.py <input_file>")
+        return
     
     input_file = sys.argv[1]
-    encode_bin_int64(input_file)
+    output_file = f"{input_file}.bin"
+    encode_bin_int64(input_file, output_file)
+    print(f"Encoded data saved to {output_file}")
+
+if __name__ == "__main__":
+    main()
