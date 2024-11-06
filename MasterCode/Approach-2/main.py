@@ -2,11 +2,11 @@ import sys
 import csv
 import os
 import time
-from Binary import BinaryDataCompressor
-from Dictionary import DictionaryCompressor
-from Differential import DifferentialCompressor
-from Frame_of_Reference import FrameOfReferenceCompressor
-from Run_Length import RunLengthCompressor
+from binary import BinaryDataCompressor
+from dictionary import DictionaryCompressor
+from differential import DifferentialCompressor
+from forf import FrameOfReferenceCompressor
+from rle import RunLengthCompressor
 import pickle
 
 

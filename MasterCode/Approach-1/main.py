@@ -13,18 +13,15 @@ def main():
     data_type = sys.argv[3]  # Data type
     input_file = sys.argv[4]  # Input file path
 
-    # Determine base filename (without extension) for output files
-    base_filename = os.path.splitext(input_file)[0]
-
-    # Set output file based on mode and desired file format
+    # Ensure the output file is named correctly
     if mode == "en":
-        output_file = f"{base_filename}.{algorithm}"
+        output_file = f"{input_file}.{algorithm}"
     elif mode == "de":
-        output_file = f"{base_filename}.{algorithm}.csv"
+        output_file = f"{input_file}.csv"
     else:
         print("Invalid mode. Use 'en' for encoding or 'de' for decoding.")
         sys.exit(1)
-
+        
     # Define the path to each script relative to the current script's directory
     script_dir = os.path.dirname(os.path.abspath(__file__))
     algorithm_scripts = {
@@ -45,19 +42,20 @@ def main():
         print(f"The algorithm '{algorithm}' does not support the data type 'string'.")
         sys.exit(1)
 
-    # Build command to call the respective script
+    # Build command based on the specific algorithm
     script = algorithm_scripts[algorithm]
     python_cmd = "python3" if os.name != "nt" else "python"
-    command = [python_cmd, script, mode, data_type, input_file, output_file]
 
-    # Print the command being executed
-    print(f"Executing command: {' '.join(command)}")
+    # For algorithms that don’t use data_type, omit it from the command
+    if algorithm in {"rle", "dic"}:
+        command = [python_cmd, script, mode, input_file, output_file]
+    else:
+        command = [python_cmd, script, mode, data_type, input_file, output_file]
 
     # Execute the command and capture any output or errors
     try:
         subprocess.run(command, check=True)
         print(f"Operation {mode} on {algorithm} with data type {data_type} completed successfully.")
-        print(f"Output saved to {output_file}")
     except subprocess.CalledProcessError as e:
         print(f"Error executing {script}: {e}")
 
