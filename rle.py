@@ -1,5 +1,6 @@
 from argparse import ArgumentParser
 import re
+import time
 
 
 def config_parser() -> ArgumentParser:
@@ -11,8 +12,10 @@ def config_parser() -> ArgumentParser:
     return parser.parse_args()
 
 
-def rle_encode(path: str) -> None:
+def rle_encode(path: str, args: ArgumentParser) -> None:
     
+    start_time = time.time()
+
     with open(path, 'r') as file_read, open(path + ".rle", 'w') as file_write:
 
         prev = None
@@ -44,8 +47,15 @@ def rle_encode(path: str) -> None:
         # not 1 ahead anymore, do not need to subtract 1
         file_write.write(f"{prev},{i-count},{count+1}\n")
 
+        end_time = time.time()
 
-def rle_decode(path: str) -> None:
+        with open('logging time.csv', 'a') as time_file:
+            time_file.write(f"{args.encoding} rle {path} {end_time-start_time}\n")
+
+
+def rle_decode(path: str, args:ArgumentParser) -> None:
+
+    start_time = time.time()
 
     with open(path, 'r') as file_read, open(path + ".csv", 'w') as file_write:
 
@@ -64,6 +74,11 @@ def rle_decode(path: str) -> None:
             # Write to the output file
             file_write.write(f"{part1}\n" * int(part3))
 
+    end_time = time.time()
+
+    with open('logging time.csv', 'a') as time_file:
+            time_file.write(f"{args.encoding} rle {path} {end_time-start_time}\n")
+
     
 
 
@@ -75,9 +90,9 @@ def main(args):
 
     # Determine which method to use
     if encoding == "en" and compression == "rle":
-        rle_encode(file_path)
+        rle_encode(file_path, args)
     elif encoding == "de" and compression == "rle":
-        rle_decode(file_path)
+        rle_decode(file_path, args)
     else:
         raise Exception("ERROR: Not yet implemented :p")
 
