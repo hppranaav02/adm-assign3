@@ -16,7 +16,7 @@ def rle_encode(path: str, args: ArgumentParser) -> None:
     
     start_time = time.time()
 
-    with open(path, 'r') as file_read, open(path + ".rle", 'w') as file_write:
+    with open(path, 'r') as file_read, open(path + ".rle", 'w', newline='') as file_write:
 
         prev = None
         count = 0
@@ -57,7 +57,7 @@ def rle_decode(path: str, args:ArgumentParser) -> None:
 
     start_time = time.time()
 
-    with open(path, 'r') as file_read, open(path + ".csv", 'w') as file_write:
+    with open(path, 'r') as file_read, open(path + ".csv", 'w', newline='') as file_write:
 
         # Read a row
         for i, message in enumerate(file_read):
