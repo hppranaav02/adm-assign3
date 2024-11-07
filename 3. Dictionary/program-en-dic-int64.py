@@ -3,14 +3,13 @@ import json
 import struct
 
 def build_dictionary(data):
-    """Generate a dictionary mapping unique int64 values to integer codes."""
     unique_values = list(dict.fromkeys(data))  
     encoding_dict = {value: index for index, value in enumerate(unique_values)}
     encoded_data = [encoding_dict[value] for value in data]
     return encoding_dict, encoded_data
 
 def write_encoded_file(output_path, encoded_content, encoding_dict):
-    """Write encoded content and dictionary to the output file."""
+
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write("Encoded Content:\n")
         f.write(" ".join(map(str, encoded_content)) + "\n")

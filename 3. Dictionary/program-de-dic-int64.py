@@ -2,7 +2,7 @@ import sys
 import json
 
 def load_encoded_data(file_path):
-    """Load encoded content and dictionary from the specified file."""
+
     with open(file_path, 'r', encoding='utf-8') as f:
         lines = f.readlines()
 
@@ -17,7 +17,7 @@ def load_encoded_data(file_path):
     return encoded_content, decoding_dict
 
 def decode_content(encoded_content, decoding_dict):
-    """Rebuild the original int64 values using the decoding dictionary."""
+
     return [decoding_dict[code] for code in encoded_content]
 
 def main():
