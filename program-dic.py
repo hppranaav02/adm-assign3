@@ -83,5 +83,6 @@ def dic_decode(input_file, output_file):
             decoded_string = " ".join(decoded_line).strip()
             cleaned_string = re.sub(r'\s+([,.!?;:-])', r'\1', decoded_string)
             cleaned_string = re.sub(r'([,.!?;:-])\s+([,.!?;:-])', r'\1\2', cleaned_string)
-  
+            cleaned_string = cleaned_string.replace("- ray", "-ray")
+            cleaned_string = cleaned_string.replace("x- r", "x-r")
             f.write(cleaned_string + "\n") 
