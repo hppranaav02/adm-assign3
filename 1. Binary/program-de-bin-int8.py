@@ -3,7 +3,7 @@ import struct
 
 def decode_bin_int8(input_file):
     with open(input_file, 'rb') as infile:
-        while byte := infile.read(1):  # Read 1 byte for int8
+        while byte := infile.read(1):  
             value = struct.unpack('b', byte)[0]
             print(value)
 

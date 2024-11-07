@@ -4,15 +4,14 @@ import struct
 def decode_rle_string(input_file):
     with open(input_file, 'rb') as infile:
         while True:
-            length_bytes = infile.read(2)   # Unsigned int16 for string length
+            length_bytes = infile.read(2)   
             if not length_bytes:
                 break
             length = struct.unpack('<H', length_bytes)[0]
-            encoded_string = infile.read(length)           # Read the string based on its length
+            encoded_string = infile.read(length)           
             value = encoded_string.decode('utf-8')
-            count = struct.unpack('<I', infile.read(4))[0]  # Unsigned int32 for count
+            count = struct.unpack('<I', infile.read(4))[0]  
 
-            # Print each decoded string value `count` times
             for _ in range(count):
                 print(value)
 

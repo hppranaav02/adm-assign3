@@ -9,11 +9,11 @@ def encode_for_int16(input_file, output_file):
     deltas = [value - reference_value for value in data]
 
     with open(output_file, 'wb') as outfile:
-        # Write reference value
-        outfile.write(struct.pack('<h', reference_value))  # int16 reference
-        # Write deltas
+
+        outfile.write(struct.pack('<h', reference_value))  
+
         for delta in deltas:
-            outfile.write(struct.pack('<h', delta))  # int16 delta
+            outfile.write(struct.pack('<h', delta))  
 
 def main():
     if len(sys.argv) != 2:

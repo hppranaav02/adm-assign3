@@ -3,7 +3,7 @@ import struct
 
 def decode_bin_int64(input_file):
     with open(input_file, 'rb') as infile:
-        while bytes_ := infile.read(8):  # Read 8 bytes for int64
+        while bytes_ := infile.read(8):  
             value = struct.unpack('<q', bytes_)[0]
             print(value)
 

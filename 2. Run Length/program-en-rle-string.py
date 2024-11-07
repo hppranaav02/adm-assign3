@@ -14,12 +14,11 @@ def encode_rle_string(input_file, output_file):
                 count += 1
                 i += 1
             
-            # Encode the string length and string itself, followed by count
             encoded_string = value.encode('utf-8')
             length = len(encoded_string)
-            outfile.write(struct.pack('<H', length))       # Unsigned int16 for string length
-            outfile.write(encoded_string)                  # Encoded string
-            outfile.write(struct.pack('<I', count))        # Unsigned int32 for count
+            outfile.write(struct.pack('<H', length))       
+            outfile.write(encoded_string)             
+            outfile.write(struct.pack('<I', count))      
             i += 1
 
 def main():

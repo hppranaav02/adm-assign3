@@ -4,8 +4,8 @@ import struct
 def decode_rle_int64(input_file):
     with open(input_file, 'rb') as infile:
         while True:
-            value_bytes = infile.read(8)  # int64 value
-            count_bytes = infile.read(8)  # unsigned int64 count
+            value_bytes = infile.read(8)  
+            count_bytes = infile.read(8)  
             if not value_bytes or not count_bytes:
                 break
             value = struct.unpack('<q', value_bytes)[0]

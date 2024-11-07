@@ -9,11 +9,11 @@ def encode_for_int8(input_file, output_file):
     deltas = [value - reference_value for value in data]
 
     with open(output_file, 'wb') as outfile:
-        # Write reference value
-        outfile.write(struct.pack('b', reference_value))  # int8 reference
-        # Write deltas
+
+        outfile.write(struct.pack('b', reference_value)) 
+
         for delta in deltas:
-            outfile.write(struct.pack('b', delta))  # int8 delta
+            outfile.write(struct.pack('b', delta))  
 
 def main():
     if len(sys.argv) != 2:

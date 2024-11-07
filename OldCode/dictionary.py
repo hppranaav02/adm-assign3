@@ -3,7 +3,6 @@ import time
 import pickle
 
 def encode_dictionary(input_file, output_file):
-    """Encodes a CSV file using dictionary encoding."""
     dictionary = {}
     encoded_data = []
 
@@ -12,11 +11,10 @@ def encode_dictionary(input_file, output_file):
         for line in infile:
             value = line.strip()
             if value not in dictionary:
-                dictionary[value] = len(dictionary)  # Assign a new index for unique values
+                dictionary[value] = len(dictionary)  
             encoded_data.append(dictionary[value])
 
     with open(output_file, 'wb') as outfile:
-        # Save both dictionary and encoded data
         pickle.dump((dictionary, encoded_data), outfile)
 
     end_time = time.time()
@@ -26,9 +24,9 @@ def decode_dictionary(input_file, output_file):
     """Decodes a file that was encoded with dictionary encoding."""
     start_time = time.time()
     with open(input_file, 'rb') as infile:
-        dictionary, encoded_data = pickle.load(infile)  # Load dictionary and encoded data
+        dictionary, encoded_data = pickle.load(infile)  
 
-    reverse_dict = {index: value for value, index in dictionary.items()}  # Reverse mapping
+    reverse_dict = {index: value for value, index in dictionary.items()}  
 
     with open(output_file, 'w') as outfile:
         for index in encoded_data:
@@ -42,7 +40,7 @@ if __name__ == "__main__":
         print("Usage: dictionary.py <en|de> <input_file> <output_file>")
         sys.exit(1)
 
-    mode = sys.argv[1]  # 'en' for encode, 'de' for decode
+    mode = sys.argv[1]  
     input_file = sys.argv[2]
     output_file = sys.argv[3]
 

@@ -3,10 +3,9 @@ import struct
 
 def decode_for_int64(input_file):
     with open(input_file, 'rb') as infile:
-        # Read the reference value
+
         reference_value = struct.unpack('<q', infile.read(8))[0]
 
-        # Read and decode each delta
         while bytes_ := infile.read(8):
             delta = struct.unpack('<q', bytes_)[0]
             original_value = reference_value + delta

@@ -6,10 +6,9 @@ def encode_dif_int8(input_file, output_file):
         data = [int(line.strip()) for line in infile]
     
     with open(output_file, 'wb') as outfile:
-        # Write the first value as the initial reference point
-        outfile.write(struct.pack('b', data[0]))  # int8 reference value
 
-        # Calculate and write differences
+        outfile.write(struct.pack('b', data[0]))  
+
         for i in range(1, len(data)):
             delta = data[i] - data[i - 1]
             outfile.write(struct.pack('b', delta))  # int8 delta

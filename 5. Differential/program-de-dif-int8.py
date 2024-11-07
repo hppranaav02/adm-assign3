@@ -3,11 +3,10 @@ import struct
 
 def decode_dif_int8(input_file):
     with open(input_file, 'rb') as infile:
-        # Read the initial reference value
+
         value = struct.unpack('b', infile.read(1))[0]
         print(value)
 
-        # Read and decode each delta
         while byte := infile.read(1):
             delta = struct.unpack('b', byte)[0]
             value += delta

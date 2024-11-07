@@ -3,7 +3,7 @@ import struct
 
 def decode_dif_int64(input_file):
     with open(input_file, 'rb') as infile:
-        value = struct.unpack('<q', infile.read(8))[0]  # int64 reference value
+        value = struct.unpack('<q', infile.read(8))[0] 
         print(value)
 
         while bytes_ := infile.read(8):

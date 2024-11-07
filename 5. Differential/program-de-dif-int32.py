@@ -3,7 +3,7 @@ import struct
 
 def decode_dif_int32(input_file):
     with open(input_file, 'rb') as infile:
-        value = struct.unpack('<i', infile.read(4))[0]  # int32 reference value
+        value = struct.unpack('<i', infile.read(4))[0]  
         print(value)
 
         while bytes_ := infile.read(4):

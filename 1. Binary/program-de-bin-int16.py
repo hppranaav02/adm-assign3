@@ -3,7 +3,7 @@ import struct
 
 def decode_bin_int16(input_file):
     with open(input_file, 'rb') as infile:
-        while bytes_ := infile.read(2):  # Read 2 bytes for int16
+        while bytes_ := infile.read(2): 
             value = struct.unpack('<h', bytes_)[0]
             print(value)
 

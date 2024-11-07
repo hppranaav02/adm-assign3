@@ -9,11 +9,11 @@ def encode_for_int64(input_file, output_file):
     deltas = [value - reference_value for value in data]
 
     with open(output_file, 'wb') as outfile:
-        # Write reference value
-        outfile.write(struct.pack('<q', reference_value))  # int64 reference
-        # Write deltas
+
+        outfile.write(struct.pack('<q', reference_value)) 
+
         for delta in deltas:
-            outfile.write(struct.pack('<q', delta))  # int64 delta
+            outfile.write(struct.pack('<q', delta)) 
 
 def main():
     if len(sys.argv) != 2:

@@ -6,11 +6,11 @@ def encode_dif_int32(input_file, output_file):
         data = [int(line.strip()) for line in infile]
     
     with open(output_file, 'wb') as outfile:
-        outfile.write(struct.pack('<i', data[0]))  # int32 reference value
+        outfile.write(struct.pack('<i', data[0]))  
 
         for i in range(1, len(data)):
             delta = data[i] - data[i - 1]
-            outfile.write(struct.pack('<i', delta))  # int32 delta
+            outfile.write(struct.pack('<i', delta))  
 
 def main():
     if len(sys.argv) != 2:

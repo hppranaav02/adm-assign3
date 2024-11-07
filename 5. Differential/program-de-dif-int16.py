@@ -3,7 +3,7 @@ import struct
 
 def decode_dif_int16(input_file):
     with open(input_file, 'rb') as infile:
-        value = struct.unpack('<h', infile.read(2))[0]  # int16 reference value
+        value = struct.unpack('<h', infile.read(2))[0]  
         print(value)
 
         while bytes_ := infile.read(2):

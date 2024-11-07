@@ -5,7 +5,7 @@ def encode_bin_int32(input_file, output_file):
     with open(input_file, 'r') as infile, open(output_file, 'wb') as outfile:
         for line in infile:
             value = int(line.strip())
-            outfile.write(struct.pack('<i', value))  # '<i' for little-endian int32
+            outfile.write(struct.pack('<i', value))  
 
 def main():
     if len(sys.argv) != 2:

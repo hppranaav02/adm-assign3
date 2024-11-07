@@ -10,14 +10,12 @@ def encode_rle_int8(input_file, output_file):
         while i < len(data):
             value = data[i]
             count = 1
-            # Count consecutive occurrences of the same value
             while i + 1 < len(data) and data[i + 1] == value:
                 count += 1
                 i += 1
             
-            # Write the value and count as int8 and unsigned int8
-            outfile.write(struct.pack('b', value))   # int8 value
-            outfile.write(struct.pack('B', count))   # unsigned int8 count
+            outfile.write(struct.pack('b', value))  
+            outfile.write(struct.pack('B', count))  
             i += 1
 
 def main():

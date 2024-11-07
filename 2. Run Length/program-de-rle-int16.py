@@ -4,8 +4,8 @@ import struct
 def decode_rle_int16(input_file):
     with open(input_file, 'rb') as infile:
         while True:
-            value_bytes = infile.read(2)  # int16 value
-            count_bytes = infile.read(2)  # unsigned int16 count
+            value_bytes = infile.read(2)  
+            count_bytes = infile.read(2)  
             if not value_bytes or not count_bytes:
                 break
             value = struct.unpack('<h', value_bytes)[0]

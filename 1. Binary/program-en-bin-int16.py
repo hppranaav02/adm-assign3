@@ -5,7 +5,7 @@ def encode_bin_int16(input_file, output_file):
     with open(input_file, 'r') as infile, open(output_file, 'wb') as outfile:
         for line in infile:
             value = int(line.strip())
-            outfile.write(struct.pack('<h', value))  # '<h' for little-endian int16
+            outfile.write(struct.pack('<h', value)) 
 
 def main():
     if len(sys.argv) != 2:

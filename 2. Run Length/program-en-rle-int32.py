@@ -14,8 +14,8 @@ def encode_rle_int32(input_file, output_file):
                 count += 1
                 i += 1
             
-            outfile.write(struct.pack('<i', value))   # int32 value
-            outfile.write(struct.pack('<I', count))   # unsigned int32 count
+            outfile.write(struct.pack('<i', value))  
+            outfile.write(struct.pack('<I', count))   
             i += 1
 
 def main():

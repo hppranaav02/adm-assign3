@@ -3,7 +3,7 @@ import struct
 
 def decode_bin_int32(input_file):
     with open(input_file, 'rb') as infile:
-        while bytes_ := infile.read(4):  # Read 4 bytes for int32
+        while bytes_ := infile.read(4):  
             value = struct.unpack('<i', bytes_)[0]
             print(value)
 

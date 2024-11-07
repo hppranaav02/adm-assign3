@@ -11,9 +11,9 @@ def encode_differential(input_file, output_file):
         for line in infile:
             current_value = int(line.strip())
             if previous_value is None:
-                encoded_data.append(current_value)  # First value is stored as-is
+                encoded_data.append(current_value) 
             else:
-                encoded_data.append(current_value - previous_value)  # Store the difference
+                encoded_data.append(current_value - previous_value)  
             previous_value = current_value
 
     with open(output_file, 'w') as outfile:
@@ -33,7 +33,7 @@ def decode_differential(input_file, output_file):
         for line in infile:
             delta = int(line.strip())
             if previous_value is None:
-                decoded_data.append(delta)  # First value is stored as-is
+                decoded_data.append(delta)  
                 previous_value = delta
             else:
                 current_value = previous_value + delta
@@ -52,7 +52,7 @@ if __name__ == "__main__":
         print("Usage: differential.py <en|de> <input_file> <output_file>")
         sys.exit(1)
 
-    mode = sys.argv[1]  # 'en' for encode, 'de' for decode
+    mode = sys.argv[1] 
     input_file = sys.argv[2]
     output_file = sys.argv[3]
 

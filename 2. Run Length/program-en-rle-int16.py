@@ -14,8 +14,8 @@ def encode_rle_int16(input_file, output_file):
                 count += 1
                 i += 1
             
-            outfile.write(struct.pack('<h', value))   # int16 value
-            outfile.write(struct.pack('<H', count))   # unsigned int16 count
+            outfile.write(struct.pack('<h', value))   
+            outfile.write(struct.pack('<H', count))   
             i += 1
 
 def main():

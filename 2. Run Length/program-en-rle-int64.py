@@ -14,8 +14,8 @@ def encode_rle_int64(input_file, output_file):
                 count += 1
                 i += 1
             
-            outfile.write(struct.pack('<q', value))   # int64 value
-            outfile.write(struct.pack('<Q', count))   # unsigned int64 count
+            outfile.write(struct.pack('<q', value))   
+            outfile.write(struct.pack('<Q', count))  
             i += 1
 
 def main():
